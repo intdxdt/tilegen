@@ -1,0 +1,2 @@
+
+MAXZOOMLEVEL = 32
