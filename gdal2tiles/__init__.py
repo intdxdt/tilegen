@@ -1,20 +1,19 @@
-import sys
 import os
 import math
 import numpy
+import os
+import osgeo.gdal_array as gdalarray
+from PIL import Image
 from osgeo import gdal
 from osgeo import osr
-from PIL import Image
-import osgeo.gdal_array as gdalarray
 
 from geodetic import GlobalGeodetic
 from mercator import GlobalMercator
 
-__version__ = "$Id: gdal2tiles.py 25611 2013-02-07 10:24:56Z bishop $"
-
 resampling_list = ('average','near','bilinear','cubic','cubicspline','lanczos','antialias')
 profile_list = ('mercator','geodetic','raster') #,'zoomify')
 webviewer_list = ('all','google','openlayers','none')
+__version__ = "$Id: gdal2tiles.py 25611 2013-02-07 10:24:56Z bishop $"
 
 class GDAL2Tiles(object):
 
