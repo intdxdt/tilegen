@@ -1,28 +1,6 @@
-
+import gdal
 import sys
-
 from gdal2tiles import GDAL2Tiles
-
-try:
-    from osgeo import gdal
-    from osgeo import osr
-except:
-    import gdal
-    print('You are using "old gen" bindings. gdal2tiles needs "new gen" bindings.')
-    sys.exit(1)
-
-import os
-import math
-
-try:
-    import numpy
-    from PIL import Image
-    import osgeo.gdal_array as gdalarray
-except:
-    print  ''''antialias' resampling is not available'''
-    pass
-
-
 
 # =============================================================================
 # =============================================================================
@@ -60,9 +38,6 @@ I would like to know where it was used.
 Class is available under the open-source GDAL license (www.gdal.org).
 """
 
-
-
-# =============================================================================
 
 if __name__=='__main__':
     argv = gdal.GeneralCmdLineProcessor( sys.argv )
