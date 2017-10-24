@@ -1,8 +1,9 @@
 import math
 from common import MAXZOOMLEVEL
 
+
 class GlobalGeodetic(object):
-    """
+    r"""
     TMS Global Geodetic Profile
     ---------------------------
 
@@ -35,34 +36,48 @@ class GlobalGeodetic(object):
          -----        /--------------------/
        WMS, KML    Web Clients, Google Earth  TileMapService
     """
-    def __init__(self, tileSize=256):
-        self.tileSize = tileSize
 
-    def LatLonToPixels(self, lat, lon, zoom):
-        """Converts lat/lon to pixel coordinates in given zoom of the EPSG:4326 pyramid"""
-        res = 180.0 / self.tileSize / 2 ** zoom
-        px = (180 + lat) / res
-        py = (90 + lon) / res
+    def __init__(self, tmscompatible, tileSize=256):
+        self.tileSize = tileSize
+        if tmscompatible is not None:
+            # Defaults the resolution factor to 0.703125 (2 tiles @ level 0)
+            # Adhers to OSGeo TMS spec
+            # http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification#global-geodetic
+            self.resFact = 180.0 / self.tileSize
+        else:
+            # Defaults the resolution factor to 1.40625 (1 tile @ level 0)
+            # Adheres OpenLayers, MapProxy, etc default resolution for WMTS
+            self.resFact = 360.0 / self.tileSize
+
+    def LonLatToPixels(self, lon, lat, zoom):
+        "Converts lon/lat to pixel coordinates in given zoom of the EPSG:4326 pyramid"
+
+        res = self.resFact / 2 ** zoom
+        px = (180 + lon) / res
+        py = (90 + lat) / res
         return px, py
 
     def PixelsToTile(self, px, py):
-        """Returns coordinates of the tile covering region in pixel coordinates"""
+        "Returns coordinates of the tile covering region in pixel coordinates"
+
         tx = int(math.ceil(px / float(self.tileSize)) - 1)
         ty = int(math.ceil(py / float(self.tileSize)) - 1)
         return tx, ty
 
-    def LatLonToTile(self, lat, lon, zoom):
-        """Returns the tile for zoom which covers given lat/lon coordinates"""
-        px, py = self.LatLonToPixels(lat, lon, zoom)
+    def LonLatToTile(self, lon, lat, zoom):
+        "Returns the tile for zoom which covers given lon/lat coordinates"
+
+        px, py = self.LonLatToPixels(lon, lat, zoom)
         return self.PixelsToTile(px, py)
 
     def Resolution(self, zoom):
-        """Resolution (arc/pixel) for given zoom level (measured at Equator)"""
-        return 180.0 / self.tileSize / 2 ** zoom
-        # return 180 / float( 1 << (8+zoom) )
+        "Resolution (arc/pixel) for given zoom level (measured at Equator)"
+
+        return self.resFact / 2 ** zoom
 
     def ZoomForPixelSize(self, pixelSize):
-        """Maximal scaledown zoom of the pyramid closest to the pixelSize."""
+        "Maximal scaledown zoom of the pyramid closest to the pixelSize."
+
         for i in range(MAXZOOMLEVEL):
             if pixelSize > self.Resolution(i):
                 if i != 0:
@@ -71,8 +86,8 @@ class GlobalGeodetic(object):
                     return 0  # We don't want to scale up
 
     def TileBounds(self, tx, ty, zoom):
-        """Returns bounds of the given tile"""
-        res = 180.0 / self.tileSize / 2 ** zoom
+        "Returns bounds of the given tile"
+        res = self.resFact / 2 ** zoom
         return (
             tx * self.tileSize * res - 180,
             ty * self.tileSize * res - 90,
@@ -81,6 +96,6 @@ class GlobalGeodetic(object):
         )
 
     def TileLatLonBounds(self, tx, ty, zoom):
-        """Returns bounds of the given tile in the SWNE form"""
+        "Returns bounds of the given tile in the SWNE form"
         b = self.TileBounds(tx, ty, zoom)
-        return b[1], b[0], b[3], b[2]
+        return (b[1], b[0], b[3], b[2])
